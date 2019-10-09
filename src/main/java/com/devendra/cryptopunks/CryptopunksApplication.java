@@ -6,7 +6,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
@@ -18,6 +21,7 @@ import org.web3j.tx.gas.DefaultGasProvider;
 import java.io.IOException;
 
 @SpringBootApplication
+@EnableCaching
 public class CryptopunksApplication {
 
     private static final Logger log = LoggerFactory.getLogger(CryptopunksApplication.class);
@@ -30,6 +34,9 @@ public class CryptopunksApplication {
 
     @Value("${ethereum.wallet.password}")
     private String walletPassword;
+
+    @Value("${ethereum.cryptopunks.contract.address}")
+    private String contractAddress;
 
     public static void main(String[] args) {
         SpringApplication.run(CryptopunksApplication.class, args);
@@ -58,6 +65,17 @@ public class CryptopunksApplication {
 	ContractGasProvider contractGasProvider() {
     	return new DefaultGasProvider();
 	}
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.build();
+    }
+
+    @Bean
+    CryptoPunksMarket cryptoPunksMarket(Web3j web3j, Credentials credentials, ContractGasProvider contractGasProvider) {
+        return CryptoPunksMarket.load(contractAddress, web3j, credentials, contractGasProvider);
+    }
+
 
 
 
