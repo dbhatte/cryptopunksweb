@@ -1,17 +1,18 @@
 package com.devendra.cryptopunks.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.Credentials;
-import org.web3j.protocol.Web3j;
+import org.springframework.web.client.RestTemplate;
 import org.web3j.tuples.generated.Tuple5;
-import org.web3j.tx.gas.ContractGasProvider;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -20,25 +21,14 @@ import java.util.stream.LongStream;
 @Service
 public class CryptopunksServiceImpl implements CryptopunksService {
 
-    @Value("${ethereum.cryptopunks.contract.address}")
-    private String contractAddress;
+    @Autowired
+    CryptoPunksMarket cryptoPunksMarket;
+
+    @Value("${cryptopunks.list.url}")
+    private String cryptopunksUrl;
 
     @Autowired
-    Web3j web3j;
-
-    @Autowired
-    Credentials credentials;
-
-    @Autowired
-    ContractGasProvider contractGasProvider;
-
-    @Autowired
-    CryptoPunksMarket market;
-
-    @Bean
-    CryptoPunksMarket cryptoPunksMarket() {
-        return CryptoPunksMarket.load(contractAddress, web3j, credentials, contractGasProvider);
-    }
+    private RestTemplate restTemplate;
 
     @Override
     public List<BigInteger> getPunksForSale() throws InterruptedException, ExecutionException {
@@ -69,9 +59,20 @@ public class CryptopunksServiceImpl implements CryptopunksService {
     }
 
     @Override
+    @Cacheable("cryptopunk")
+    public Map<String, String> getAllPunkDetails() throws IOException {
+        String result = restTemplate.getForObject(
+            cryptopunksUrl, String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(result, Map.class);
+    }
+
+    @Override
     @Async
     public CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>> isPunkOfferedForSale(BigInteger index) {
-        return market.punksOfferedForSale(index).sendAsync();
+        return cryptoPunksMarket.punksOfferedForSale(index).sendAsync();
     }
+
 
 }
