@@ -33,7 +33,7 @@ public class CryptopunksServiceImpl implements CryptopunksService {
     @Override
     public List<BigInteger> getPunksForSale() throws InterruptedException, ExecutionException {
 
-        List<BigInteger> range = LongStream.rangeClosed(7240, 7250)
+        List<BigInteger> range = LongStream.rangeClosed(0, 9999)
             .boxed().map(BigInteger::valueOf).collect(Collectors.toList());
 
         List<CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>>> completableFutures = range.stream().map(this::isPunkOfferedForSale).collect(Collectors.toList());
