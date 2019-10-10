@@ -60,7 +60,7 @@ public class CryptopunksServiceImpl implements CryptopunksService {
 
     @Override
     @Cacheable("cryptopunk")
-    public Map<String, String> getAllPunkDetails() throws IOException {
+    public Map<String, Map<String, Object>>  getAllPunkDetails() throws IOException {
         String result = restTemplate.getForObject(
             cryptopunksUrl, String.class);
 
@@ -72,6 +72,10 @@ public class CryptopunksServiceImpl implements CryptopunksService {
     @Async
     public CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>> isPunkOfferedForSale(BigInteger index) {
         return cryptoPunksMarket.punksOfferedForSale(index).sendAsync();
+    }
+
+    public BigInteger getPunkOfferedPrice(BigInteger index) throws Exception {
+        return cryptoPunksMarket.punksOfferedForSale(index).send().component4();
     }
 
 

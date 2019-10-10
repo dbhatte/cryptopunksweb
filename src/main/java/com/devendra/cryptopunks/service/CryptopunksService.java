@@ -13,8 +13,10 @@ public interface CryptopunksService {
 
     CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>> isPunkOfferedForSale(BigInteger index);
 
+    BigInteger getPunkOfferedPrice(BigInteger index) throws Exception;
+
     List<BigInteger> getPunksForSale() throws InterruptedException, ExecutionException;
 
-    Map<String, String> getAllPunkDetails() throws IOException;
+    Map<String, Map<String, Object>> getAllPunkDetails() throws IOException;
 
 }
