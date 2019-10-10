@@ -28,7 +28,7 @@ public class CryptopunksServiceTest {
         log.info(service.isPunkOfferedForSale(BigInteger.valueOf(7245)).get().component1().toString());
     }
 
-    @Test
+    //@Test
     public void getPunksForSaleTest() throws ExecutionException, InterruptedException {
         log.info(service.getPunksForSale().toString());
     }

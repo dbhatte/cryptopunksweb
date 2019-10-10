@@ -1,6 +1,8 @@
 package com.devendra.cryptopunks.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -15,28 +17,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 @Service
 public class CryptopunksServiceImpl implements CryptopunksService {
 
-    @Autowired
-    CryptoPunksMarket cryptoPunksMarket;
+    private static final Logger log = LoggerFactory.getLogger(CryptopunksServiceImpl.class);
 
     @Value("${cryptopunks.list.url}")
     private String cryptopunksUrl;
 
     @Autowired
+    CryptoPunksMarket cryptoPunksMarket;
+
+    @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private Executor asyncExecutor;
+
+    private static final List<BigInteger> range = LongStream.rangeClosed(8600, 9999).boxed().map(BigInteger::valueOf).collect(Collectors.toList());
 
     @Override
     public List<BigInteger> getPunksForSale() throws InterruptedException, ExecutionException {
+        log.info("getPunksForSale start");
 
-        List<BigInteger> range = LongStream.rangeClosed(0, 9999)
-            .boxed().map(BigInteger::valueOf).collect(Collectors.toList());
-
-        List<CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>>> completableFutures = range.stream().map(this::isPunkOfferedForSale).collect(Collectors.toList());
+        List<CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>>> completableFutures = range.stream().map(index -> CompletableFuture.supplyAsync(() -> supplier(index), asyncExecutor)).collect(Collectors.toList());
 
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
 
@@ -55,16 +63,32 @@ public class CryptopunksServiceImpl implements CryptopunksService {
                                     .map(Tuple5::component2)
                                     .collect(Collectors.toList()));
 
-        return completableFuture.get();
+        final List<BigInteger> punksForSale = completableFuture.get();
+
+        log.info("getPunksForSale end");
+
+        return punksForSale;
+    }
+
+    private Tuple5<Boolean, BigInteger, String, BigInteger, String> supplier(BigInteger index) {
+        try {
+            return cryptoPunksMarket.punksOfferedForSale(index).send();
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return new Tuple5<>(false, index, "", BigInteger.ZERO, "");
     }
 
     @Override
     @Cacheable("cryptopunk")
     public Map<String, Map<String, Object>>  getAllPunkDetails() throws IOException {
-        String result = restTemplate.getForObject(
-            cryptopunksUrl, String.class);
+        log.info("getAllPunkDetails start");
+        String result = restTemplate.getForObject(cryptopunksUrl, String.class);
 
         ObjectMapper mapper = new ObjectMapper();
+        log.info("getAllPunkDetails end");
+
         return mapper.readValue(result, Map.class);
     }
 
@@ -77,6 +101,5 @@ public class CryptopunksServiceImpl implements CryptopunksService {
     public BigInteger getPunkOfferedPrice(BigInteger index) throws Exception {
         return cryptoPunksMarket.punksOfferedForSale(index).send().component4();
     }
-
 
 }

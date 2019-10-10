@@ -23,7 +23,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorInfo, headers, HttpStatus.BAD_REQUEST);
     }
 
-
     private HttpHeaders getHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json; charset=utf-8");
