@@ -69,7 +69,7 @@ public class CryptopunksServiceImpl implements CryptopunksService {
     }
 
     @Override
-    @Async
+    @Async("asyncExecutor")
     public CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>> isPunkOfferedForSale(BigInteger index) {
         return cryptoPunksMarket.punksOfferedForSale(index).sendAsync();
     }
