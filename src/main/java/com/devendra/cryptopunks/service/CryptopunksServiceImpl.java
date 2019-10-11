@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.web3j.tuples.generated.Tuple5;
@@ -38,7 +37,7 @@ public class CryptopunksServiceImpl implements CryptopunksService {
     @Autowired
     private Executor asyncExecutor;
 
-    private static final List<BigInteger> range = LongStream.rangeClosed(8600, 9999).boxed().map(BigInteger::valueOf).collect(Collectors.toList());
+    private static final List<BigInteger> range = LongStream.rangeClosed(0, 9999).boxed().map(BigInteger::valueOf).collect(Collectors.toList());
 
     @Override
     public List<BigInteger> getPunksForSale() throws InterruptedException, ExecutionException {
@@ -80,6 +79,9 @@ public class CryptopunksServiceImpl implements CryptopunksService {
         return new Tuple5<>(false, index, "", BigInteger.ZERO, "");
     }
 
+    /*
+    * Please note this returns only values till 8999. Need to use another API for all punks details
+    * */
     @Override
     @Cacheable("cryptopunk")
     public Map<String, Map<String, Object>>  getAllPunkDetails() throws IOException {
@@ -93,11 +95,6 @@ public class CryptopunksServiceImpl implements CryptopunksService {
     }
 
     @Override
-    @Async("asyncExecutor")
-    public CompletableFuture<Tuple5<Boolean, BigInteger, String, BigInteger, String>> isPunkOfferedForSale(BigInteger index) {
-        return cryptoPunksMarket.punksOfferedForSale(index).sendAsync();
-    }
-
     public BigInteger getPunkOfferedPrice(BigInteger index) throws Exception {
         return cryptoPunksMarket.punksOfferedForSale(index).send().component4();
     }

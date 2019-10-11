@@ -13,6 +13,7 @@ import java.math.BigInteger;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -24,11 +25,12 @@ public class CryptopunksServiceTest {
     private CryptopunksService service;
 
     @Test
-    public void callOneAsyncTest() throws ExecutionException, InterruptedException {
-        log.info(service.isPunkOfferedForSale(BigInteger.valueOf(7245)).get().component1().toString());
+    public void getPunkOfferedPrice() throws Exception {
+        assertNotNull(service.getPunkOfferedPrice(BigInteger.valueOf(7245)));
     }
 
     //@Test
+    //Commented as this test can ban the application
     public void getPunksForSaleTest() throws ExecutionException, InterruptedException {
         log.info(service.getPunksForSale().toString());
     }
