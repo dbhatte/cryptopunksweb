@@ -1,6 +1,6 @@
 package com.devendra.cryptopunks;
 
-import com.devendra.cryptopunks.service.CryptoPunksMarket;
+import com.devendra.cryptopunks.generated.CryptoPunksMarket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

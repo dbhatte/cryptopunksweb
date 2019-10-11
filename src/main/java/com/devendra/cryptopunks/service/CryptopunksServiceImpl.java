@@ -1,5 +1,6 @@
 package com.devendra.cryptopunks.service;
 
+import com.devendra.cryptopunks.generated.CryptoPunksMarket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

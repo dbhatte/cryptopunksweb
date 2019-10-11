@@ -28,7 +28,8 @@ public class CryptopunksApplication {
 
     @Bean(name = "asyncExecutor")
     public Executor asyncExecutor() {
-        ExecutorService executor = Executors.newFixedThreadPool(20);
+        // Increasing the number of thread gives faster results. But, results in banning from the webservice
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         return executor;
     }
 
