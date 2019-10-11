@@ -82,6 +82,7 @@ public class CryptopunksServiceImpl implements CryptopunksService {
 
     /*
     * Please note this returns only values till 8999. Need to use another API for all punks details
+    * Output from this class is a constant and so is cached for performance
     * */
     @Override
     @Cacheable("cryptopunk")
